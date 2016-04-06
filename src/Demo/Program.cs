@@ -33,8 +33,31 @@ namespace EdgeJs.Connect.Demo
 
         public class Context
         {
-            public Func<object, Task<dynamic>> Next { get; internal set; }
-            public string Path { get; set; }
+            private readonly IDictionary<string, object> env;
+            private readonly AppFunc next;
+
+            public Context(IDictionary<string, object> env, AppFunc next)
+            {
+                this.env = env;
+                this.next = next;
+            }
+
+            public Func<object, Task<object>> Next
+            {
+                get
+                {
+                    return async _ =>
+                    {
+                        await next(env);
+                        return null;
+                    };
+                }
+            }
+
+            public string Path
+            {
+                get { return (string)env["owin.RequestPath"]; }
+            }
         }
 
         public class Startup
@@ -50,13 +73,8 @@ namespace EdgeJs.Connect.Demo
                 app.UseFunc(
                     next =>
                     async env =>
-                    {
-                        var res = await connect(new Context
-                        {
-                            Path = (string)env["owin.RequestPath"],
-                            Next = async _ => { await next(env); return null; },
-                        });
-                    });
+                        await connect(new Context(env, next))
+                    );
 
                 app.UseWelcomePage("/");
 
