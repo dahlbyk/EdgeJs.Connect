@@ -56,11 +56,6 @@ namespace EdgeJs.Connect.Demo
                             Path = (string)env["owin.RequestPath"],
                             Next = async _ => { await next(env); return null; },
                         });
-
-                        if ((bool)res.handled == true)
-                            return;
-
-                        await next(env);
                     });
 
                 app.UseWelcomePage("/");

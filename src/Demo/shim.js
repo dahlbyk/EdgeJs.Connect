@@ -1,7 +1,7 @@
 ﻿module.exports = function owin(env, callback) {
-    callback(null, {
-        path: env.Path,
-        handled: env.Path === '/test'
-    });
-    return;
+    if (env.Path === '/test') {
+        return callback();
+    }
+
+    return callback(null, env.Next());
 };
