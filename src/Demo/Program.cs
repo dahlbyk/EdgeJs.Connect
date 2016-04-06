@@ -120,6 +120,32 @@ namespace EdgeJs.Connect.Demo
                 {
                     this.env = env;
                 }
+
+                public Func<object, Task<object>> SetHeader
+                {
+                    get
+                    {
+                        return async input =>
+                        {
+                            var args = (object[])input;
+                            env.SetHeader(args[0]?.ToString() ?? "", args[1]?.ToString() ?? "");
+                            return null;
+                        };
+                    }
+                }
+
+                public Func<object, Task<object>> End
+                {
+                    get
+                    {
+                        return async input =>
+                        {
+                            var args = (object[])input;
+                            return await env.WriteBody(args[0]?.ToString() ?? "");
+                        };
+                    }
+                }
+
             }
         }
 
@@ -175,15 +201,24 @@ namespace EdgeJs.Connect.Demo
 
     public static class Ext
     {
+        public static void SetHeader(this IDictionary<string, object> env, string key, string value)
+        {
+            var headers = (IDictionary<string, string[]>)env["owin.ResponseHeaders"];
+            headers[key] = new[] { value };
+        }
+
         public static async Task<string> WriteText(this IDictionary<string, object> env, object content)
         {
             var text = content?.ToString() ?? "";
+            env.SetHeader("Content-Length", text.Length.ToString());
+            env.SetHeader("Content-Type", "text/plain");
+            return await env.WriteBody(text);
+        }
 
+        public static async Task<string> WriteBody(this IDictionary<string, object> env, string text)
+        {
             using (var sw = new StreamWriter((Stream)env["owin.ResponseBody"]))
             {
-                var headers = (IDictionary<string, string[]>)env["owin.ResponseHeaders"];
-                headers["Content-Length"] = new[] { text.Length.ToString() };
-                headers["Content-Type"] = new[] { "text/plain" };
                 await sw.WriteAsync(text);
                 return text;
             }

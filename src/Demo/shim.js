@@ -7,6 +7,14 @@ app.use(function (req, res, next) {
     next();
 })
 
+app.use('/test', function (req, res, next) {
+    var buf = `Greetings from Node.js ${process.version}!\n`;
+
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Content-Length', buf.length);
+    res.end(buf);
+})
+
 function wrapReq(req) {
     return {
         url: req.Url,
@@ -15,6 +23,8 @@ function wrapReq(req) {
 
 function wrapRes(req) {
     return {
+        end: function () { return req.End(Array.prototype.slice.call(arguments)); },
+        setHeader: function () { return req.SetHeader(Array.prototype.slice.call(arguments)); },
     };
 }
 
