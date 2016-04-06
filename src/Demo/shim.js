@@ -1,8 +1,10 @@
-﻿module.exports = function owin(env, callback) {
-    if (env.Path === '/test') {
-        env.WriteText("Hello from Node.js");
-        return callback();
-    }
+﻿var connect = require('connect');
+var http = require('http');
+
+var app = connect();
+
+module.exports = function owin(env, callback) {
+    app(env.Request, env.Response, env.Next);
 
     return callback(null, env.Next());
 };

@@ -42,6 +42,22 @@ namespace EdgeJs.Connect.Demo
                 this.next = next;
             }
 
+            public RequestProxy Request
+            {
+                get
+                {
+                    return new RequestProxy(env);
+                }
+            }
+
+            public ResponseProxy Response
+            {
+                get
+                {
+                    return new ResponseProxy(env);
+                }
+            }
+
             public Func<object, Task<object>> Next
             {
                 get
@@ -67,6 +83,42 @@ namespace EdgeJs.Connect.Demo
                     {
                         return await env.WriteText(input);
                     };
+                }
+            }
+
+            public class RequestProxy
+            {
+                private readonly IDictionary<string, object> env;
+
+                public RequestProxy(IDictionary<string, object> env)
+                {
+                    this.env = env;
+
+                    var headers = (IDictionary<string, string[]>)env["owin.RequestHeaders"];
+                    var uri =
+                       (string)env["owin.RequestScheme"] +
+                       "://" +
+                       headers["Host"].First() +
+                       (string)env["owin.RequestPathBase"] +
+                       (string)env["owin.RequestPath"];
+
+                    if ((string)env["owin.RequestQueryString"] != "")
+                    {
+                        uri += "?" + (string)env["owin.RequestQueryString"];
+                    }
+                    url = uri;
+                }
+
+                public string url { get; set; }
+            }
+
+            public class ResponseProxy
+            {
+                private readonly IDictionary<string, object> env;
+
+                public ResponseProxy(IDictionary<string, object> env)
+                {
+                    this.env = env;
                 }
             }
         }
