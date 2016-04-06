@@ -58,6 +58,17 @@ namespace EdgeJs.Connect.Demo
             {
                 get { return (string)env["owin.RequestPath"]; }
             }
+
+            public Func<object, Task<object>> WriteText
+            {
+                get
+                {
+                    return async input =>
+                    {
+                        return await env.WriteText(input);
+                    };
+                }
+            }
         }
 
         public class Startup
@@ -112,15 +123,17 @@ namespace EdgeJs.Connect.Demo
 
     public static class Ext
     {
-        public static async Task WriteText(this IDictionary<string, object> env, string content)
+        public static async Task<string> WriteText(this IDictionary<string, object> env, object content)
         {
+            var text = content?.ToString() ?? "";
+
             using (var sw = new StreamWriter((Stream)env["owin.ResponseBody"]))
             {
-
                 var headers = (IDictionary<string, string[]>)env["owin.ResponseHeaders"];
-                headers["Content-Length"] = new[] { content.Length.ToString() };
+                headers["Content-Length"] = new[] { text.Length.ToString() };
                 headers["Content-Type"] = new[] { "text/plain" };
-                await sw.WriteAsync(content);
+                await sw.WriteAsync(text);
+                return text;
             }
         }
     }
