@@ -106,10 +106,10 @@ namespace EdgeJs.Connect.Demo
                     {
                         uri += "?" + (string)env["owin.RequestQueryString"];
                     }
-                    url = uri;
+                    Url = uri;
                 }
 
-                public string url { get; set; }
+                public string Url { get; set; }
             }
 
             public class ResponseProxy
