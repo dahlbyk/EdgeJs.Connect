@@ -33,7 +33,7 @@ namespace EdgeJs.Connect.Demo
 
         public class Context
         {
-            public Func<Task> Next { get; internal set; }
+            public Func<object, Task<dynamic>> Next { get; internal set; }
             public string Path { get; set; }
         }
 
@@ -54,7 +54,7 @@ namespace EdgeJs.Connect.Demo
                         var res = await connect(new Context
                         {
                             Path = (string)env["owin.RequestPath"],
-                            //Next = () => next(env),
+                            Next = async _ => { await next(env); return null; },
                         });
 
                         if ((bool)res.handled == true)
