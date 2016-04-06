@@ -98,21 +98,29 @@ namespace EdgeJs.Connect.Demo
             {
                 return async env =>
                     {
-                        using (var sw = new StreamWriter((Stream)env["owin.ResponseBody"]))
-                        {
-                            var sb = new StringBuilder("Environment:\n");
+                        var sb = new StringBuilder("Environment:\n");
 
-                            foreach (var kvp in env.OrderBy(x => x.Key))
-                                sb.AppendFormat("  {0}: {1}\n", kvp.Key, kvp.Value);
+                        foreach (var kvp in env.OrderBy(x => x.Key))
+                            sb.AppendFormat("  {0}: {1}\n", kvp.Key, kvp.Value);
 
-                            var content = sb.ToString();
-
-                            var headers = (IDictionary<string, string[]>)env["owin.ResponseHeaders"];
-                            headers["Content-Length"] = new[] { content.Length.ToString() };
-                            headers["Content-Type"] = new[] { "text/plain" };
-                            await sw.WriteAsync(content);
-                        }
+                        var content = sb.ToString();
+                        await env.WriteText(content);
                     };
+            }
+        }
+    }
+
+    public static class Ext
+    {
+        public static async Task WriteText(this IDictionary<string, object> env, string content)
+        {
+            using (var sw = new StreamWriter((Stream)env["owin.ResponseBody"]))
+            {
+
+                var headers = (IDictionary<string, string[]>)env["owin.ResponseHeaders"];
+                headers["Content-Length"] = new[] { content.Length.ToString() };
+                headers["Content-Type"] = new[] { "text/plain" };
+                await sw.WriteAsync(content);
             }
         }
     }
